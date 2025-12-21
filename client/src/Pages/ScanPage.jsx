@@ -1,5 +1,6 @@
 import { useRef, useState } from "react";
 import EmailPage from "./EmailPage";
+import StepItem from "../components/StepItem";
 
 export default function ScanPage() {
   const videoRef = useRef(null);
@@ -8,7 +9,7 @@ export default function ScanPage() {
   const [image, setImage] = useState(null);
   const [stream, setStream] = useState(null);
   const [cameraStarted, setCameraStarted] = useState(false);
-  const [step, setStep] = useState("scan"); // scan | email
+  const [step, setStep] = useState("scan");
   const [consentAccepted, setConsentAccepted] = useState(false);
 
   // Processing UI
@@ -31,11 +32,10 @@ export default function ScanPage() {
       const mediaStream = await navigator.mediaDevices.getUserMedia({
         video: { facingMode: "environment" },
       });
-
       videoRef.current.srcObject = mediaStream;
       setStream(mediaStream);
       setCameraStarted(true);
-    } catch (err) {
+    } catch {
       alert("Camera access denied or unavailable");
     }
   };
@@ -51,7 +51,6 @@ export default function ScanPage() {
     canvas.getContext("2d").drawImage(video, 0, 0);
 
     setImage(canvas.toDataURL("image/jpeg", 0.9));
-
     stream?.getTracks().forEach((t) => t.stop());
     setCameraStarted(false);
   };
@@ -91,31 +90,42 @@ export default function ScanPage() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center p-4">
         <div className="w-full max-w-md bg-white rounded-2xl shadow-xl p-6 text-center">
-          <div className="w-16 h-16 mx-auto rounded-full border-4 border-blue-200 border-t-blue-600 animate-spin mb-6" />
-
           <h2 className="text-lg font-semibold mb-1">Processing Document</h2>
           <p className="text-sm text-gray-500 mb-6">{processText}</p>
 
-          <div className="text-left text-sm mb-4 space-y-1">
-            <p className={progress >= 30 ? "text-green-600" : "text-gray-400"}>
-              ✓ Cropping
-            </p>
-            <p className={progress >= 65 ? "text-green-600" : "text-gray-400"}>
-              ✓ Deskewing
-            </p>
-            <p className={progress >= 100 ? "text-green-600" : "text-gray-400"}>
-              ✓ Enhancing
-            </p>
+          <div className="flex flex-col items-center mb-4 space-y-2">
+            <StepItem
+              label="Cropping"
+              done={progress >= 30}
+              active={progress < 30}
+              color="brand"
+            />
+
+            <StepItem
+              label="Deskewing"
+              done={progress >= 65}
+              active={progress >= 30 && progress < 65}
+              color="warning"
+            />
+
+            <StepItem
+              label="Enhancing"
+              done={progress >= 100}
+              active={progress >= 65 && progress < 100}
+              color="purple"
+            />
           </div>
 
           <div className="w-full bg-gray-200 rounded-full h-3">
             <div
-              className="h-full bg-gradient-to-r from-blue-500 to-cyan-400 transition-all"
+              className="h-full bg-gradient-to-r from-blue-500 to-cyan-400"
               style={{ width: `${progress}%` }}
             />
           </div>
 
-          <p className="text-xs text-gray-400 mt-4">🔒 Secure on-device processing</p>
+          <p className="text-xs text-gray-400 mt-4">
+            🔒 Secure on-device processing
+          </p>
         </div>
       </div>
     );
@@ -129,9 +139,6 @@ export default function ScanPage() {
       <div className="w-full max-w-md bg-white rounded-2xl shadow-xl overflow-hidden">
         <div className="px-6 py-4 border-b text-center">
           <h1 className="text-lg font-semibold">Document Scan</h1>
-          <p className="text-xs text-red-500 mt-1">
-            Align your document inside the frame
-          </p>
         </div>
 
         <div className="p-5">
@@ -140,7 +147,7 @@ export default function ScanPage() {
               <button
                 onClick={startCamera}
                 disabled={cameraStarted}
-                className={`w-full mb-4 py-3 rounded-xl font-semibold shadow transition ${
+                className={`w-full mb-4 py-3 rounded-xl font-semibold ${
                   cameraStarted
                     ? "bg-gray-300 cursor-not-allowed"
                     : "bg-blue-600 hover:bg-blue-700 text-white"
@@ -156,13 +163,22 @@ export default function ScanPage() {
                   playsInline
                   className="w-full h-64 object-cover"
                 />
+
+                {!cameraStarted && (
+                  <div className="absolute inset-0 flex items-center justify-center px-4">
+                    <p className="text-white text-sm sm:text-base font-medium text-center bg-black/50 px-4 py-2 rounded-lg">
+                      Align your document inside the frame
+                    </p>
+                  </div>
+                )}
+
                 <div className="absolute inset-4 border-2 border-white/80 rounded-lg pointer-events-none" />
               </div>
 
               <button
                 onClick={captureImage}
                 disabled={!cameraStarted}
-                className={`w-full mt-4 py-3 rounded-xl font-semibold transition ${
+                className={`w-full mt-4 py-3 rounded-xl font-semibold ${
                   cameraStarted
                     ? "bg-emerald-600 hover:bg-emerald-700 text-white shadow"
                     : "bg-emerald-300 cursor-not-allowed text-white"
@@ -181,8 +197,6 @@ export default function ScanPage() {
                 className="w-full rounded-xl border shadow mb-4"
               />
 
-              
-
               <label className="flex gap-3 mb-5">
                 <input
                   type="checkbox"
@@ -191,7 +205,7 @@ export default function ScanPage() {
                   onChange={(e) => setConsentAccepted(e.target.checked)}
                 />
                 <span className="text-xs text-gray-700">
-                 I understand this document contains sensitive personal information. By sending it to the email address(es) and/or phone number I provide, I confirm the recipient information is correct and authorized. I understand that The Loss Prevention Group, Inc., dba LPG Live Scan, is not responsible for misdirected messages, unauthorized access to my email or phone, shared links, or any disclosure resulting from the recipients I choose.
+                   I understand this document contains sensitive personal information. By sending it to the email address(es) and/or phone number I provide, I confirm the recipient information is correct and authorized. I understand that The Loss Prevention Group, Inc., dba LPG Live Scan, is not responsible for misdirected messages, unauthorized access to my email or phone, shared links, or any disclosure resulting from the recipients I choose.
                 </span>
               </label>
 

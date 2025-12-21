@@ -189,7 +189,7 @@ if (error) {
           <h2 className="text-lg font-semibold text-center">
             Send Document
           </h2>
-          <p className="text-xs text-gray-500 text-center mt-1">
+          <p className="text-xs text-green-500 text-center mt-1">
             ✓ Processing complete — ready to send
           </p>
         </div>
