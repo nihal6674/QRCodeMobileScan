@@ -7,23 +7,24 @@ export default function ScanPage() {
 
   const [image, setImage] = useState(null);
   const [stream, setStream] = useState(null);
-  const [loading, setLoading] = useState(false);
   const [step, setStep] = useState("scan"); // scan | email
   const [consentAccepted, setConsentAccepted] = useState(false);
 
-  // ✅ STEP SWITCH (THIS WAS MISSING)
+  // ----------------------------
+  // Step switch
+  // ----------------------------
   if (step === "email") {
     return (
       <EmailPage
+        image={image}
         onBack={() => setStep("scan")}
-        onSubmit={(emails) => {
-          console.log("Emails:", emails);
-          alert("Email sent successfully");
-        }}
       />
     );
   }
 
+  // ----------------------------
+  // Camera logic
+  // ----------------------------
   const startCamera = async () => {
     const mediaStream = await navigator.mediaDevices.getUserMedia({
       video: { facingMode: "environment" },
@@ -44,43 +45,14 @@ export default function ScanPage() {
     stream.getTracks().forEach((t) => t.stop());
   };
 
-  const confirmScan = async () => {
-  if (!image || !consentAccepted) return;
-
-  setLoading(true);
-
-  try {
-    // Convert base64 image to Blob
-    const res = await fetch(image);
-    const blob = await res.blob();
-
-    const formData = new FormData();
-    formData.append("file", blob, "scan.jpg");
-    formData.append("consent", "true");
-
-    const response = await fetch("http://127.0.0.1:8000/api/scan", {
-      method: "POST",
-      body: formData,
-    });
-
-    if (!response.ok) {
-      throw new Error("Upload failed");
-    }
-
-    const data = await response.json();
-    console.log("Uploaded:", data);
-
-    // Proceed to email page
+  const confirmScan = () => {
+    if (!image || !consentAccepted) return;
     setStep("email");
-  } catch (err) {
-    console.error(err);
-    alert("Failed to upload image. Please try again.");
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
-
+  // ----------------------------
+  // UI
+  // ----------------------------
   return (
     <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
       <div className="w-full max-w-md bg-white rounded-xl shadow p-5">
@@ -113,7 +85,7 @@ export default function ScanPage() {
           </>
         )}
 
-        {image && !loading && (
+        {image && (
           <>
             <img
               src={image}
@@ -121,7 +93,7 @@ export default function ScanPage() {
               className="w-full rounded-lg border mb-4"
             />
 
-            {/* CONSENT */}
+            {/* Consent text */}
             <div className="border rounded-lg p-3 text-sm text-gray-700 mb-4 max-h-40 overflow-y-auto">
               <p>
                 I understand this document contains sensitive personal
@@ -174,13 +146,6 @@ export default function ScanPage() {
               </button>
             </div>
           </>
-        )}
-
-        {loading && (
-          <div className="text-center py-10">
-            <div className="animate-spin h-10 w-10 border-4 border-blue-600 border-t-transparent rounded-full mx-auto mb-4"></div>
-            <p className="text-gray-600">Processing scan…</p>
-          </div>
         )}
 
         <canvas ref={canvasRef} className="hidden" />
