@@ -10,10 +10,7 @@ from sendgrid.helpers.mail import (
     Disposition,
 )
 
-# ⚠️ TEMPORARY – replace with .env later
-SENDGRID_API_KEY = "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"
-SENDGRID_FROM_EMAIL = "nmohammaedali@gmail.com"
-SENDGRID_FROM_NAME = "LPG"
+
 
 
 def send_email_with_attachment(
