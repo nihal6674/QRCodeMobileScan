@@ -15,10 +15,8 @@ import asyncio
 from slowapi import Limiter
 from slowapi.util import get_remote_address
 
-from app.services.image_processing import process_image
 from app.services.pdf_service import image_to_pdf
 from app.services.email_service import send_email_with_attachment
-
 
 # -----------------------------
 # Router + Rate Limiter
@@ -38,7 +36,7 @@ MAX_FILE_SIZE = 5 * 1024 * 1024  # 5MB
 @router.post("/scan")
 @limiter.limit("3/minute")
 async def scan_form(
-    request: Request,               # required for slowapi
+    request: Request,
     file: UploadFile = File(...),
     consent: bool = Form(...),
     emails: str = Form(...)
@@ -70,7 +68,6 @@ async def scan_form(
     request_dir.mkdir(parents=True, exist_ok=True)
 
     input_path = request_dir / "input.jpg"
-    processed_path = request_dir / "processed.jpg"
     pdf_path = request_dir / "output.pdf"
 
     email_sent = False
@@ -87,22 +84,16 @@ async def scan_form(
             f.write(contents)
 
         # -----------------------------
-        # 6. Image processing
+        # 6. Generate PDF directly
         # -----------------------------
-        processed_image_path = process_image(input_path)
-        shutil.move(processed_image_path, processed_path)
-
-        # -----------------------------
-        # 7. Generate PDF
-        # -----------------------------
-        generated_pdf = image_to_pdf(processed_path)
+        generated_pdf = image_to_pdf(input_path)
         shutil.move(generated_pdf, pdf_path)
 
         if not pdf_path.exists():
             raise RuntimeError("PDF generation failed")
 
         # -----------------------------
-        # 8. Send email (non-blocking)
+        # 7. Send email (non-blocking)
         # -----------------------------
         await asyncio.to_thread(
             send_email_with_attachment,
@@ -124,13 +115,13 @@ async def scan_form(
 
     finally:
         # -----------------------------
-        # 9. Cleanup after success
+        # 8. Cleanup after success
         # -----------------------------
         if email_sent and request_dir.exists():
             shutil.rmtree(request_dir, ignore_errors=True)
 
     # -----------------------------
-    # 10. Response
+    # 9. Response
     # -----------------------------
     return {
         "status": "success",
