@@ -75,3 +75,6 @@ ehthumbs.db
 *.pem
 *.key
 *.crt
+
+.env
+.env.*

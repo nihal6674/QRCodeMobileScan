@@ -7,6 +7,7 @@ from app.services.image_processing import process_image
 from app.services.pdf_service import image_to_pdf
 from app.services.email_service import send_email_with_attachment
 
+
 router = APIRouter()
 
 BASE_TEMP_DIR = Path(tempfile.gettempdir()) / "live_scan"
