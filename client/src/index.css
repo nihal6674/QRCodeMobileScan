@@ -1,3 +1,41 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+@keyframes drawCircle {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes drawTick {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+.animate-circle {
+  animation: drawCircle 0.6s ease-out forwards;
+}
+
+.animate-tick {
+  animation: drawTick 0.4s ease-out forwards;
+  animation-delay: 0.6s;
+}
+
+@keyframes drawCircle {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes drawCross {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+
+.animate-cross {
+  animation: drawCross 0.4s ease-out forwards;
+  animation-delay: 0.6s;
+}

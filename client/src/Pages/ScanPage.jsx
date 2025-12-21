@@ -10,20 +10,20 @@ export default function ScanPage() {
   const [step, setStep] = useState("scan"); // scan | email
   const [consentAccepted, setConsentAccepted] = useState(false);
 
+  // Processing UI
+  const [processing, setProcessing] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [processText, setProcessText] = useState("Cropping document…");
+
   // ----------------------------
-  // Step switch
+  // Email page
   // ----------------------------
   if (step === "email") {
-    return (
-      <EmailPage
-        image={image}
-        onBack={() => setStep("scan")}
-      />
-    );
+    return <EmailPage image={image} onBack={() => setStep("scan")} />;
   }
 
   // ----------------------------
-  // Camera logic
+  // Camera
   // ----------------------------
   const startCamera = async () => {
     const mediaStream = await navigator.mediaDevices.getUserMedia({
@@ -42,113 +42,195 @@ export default function ScanPage() {
     canvas.getContext("2d").drawImage(video, 0, 0);
 
     setImage(canvas.toDataURL("image/jpeg", 0.9));
-    stream.getTracks().forEach((t) => t.stop());
+    stream?.getTracks().forEach((t) => t.stop());
   };
 
+  // ----------------------------
+  // Fake processing flow
+  // ----------------------------
   const confirmScan = () => {
     if (!image || !consentAccepted) return;
-    setStep("email");
+
+    setProcessing(true);
+    setProgress(0);
+    setProcessText("Cropping document…");
+
+    let p = 0;
+    const interval = setInterval(() => {
+      p += 4;
+      setProgress(p);
+
+      if (p === 30) setProcessText("Deskewing image…");
+      if (p === 65) setProcessText("Enhancing clarity…");
+
+      if (p >= 100) {
+        clearInterval(interval);
+        setTimeout(() => {
+          setProcessing(false);
+          setStep("email");
+        }, 300);
+      }
+    }, 120);
   };
 
   // ----------------------------
-  // UI
+  // Processing Screen
+  // ----------------------------
+  if (processing) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center p-4">
+        <div className="w-full max-w-md bg-white rounded-2xl shadow-xl p-6 text-center animate-fade-in">
+          <div className="mb-6">
+            <div className="w-16 h-16 mx-auto rounded-full border-4 border-blue-200 border-t-blue-600 animate-spin" />
+          </div>
+
+          <h2 className="text-lg font-semibold mb-1">
+            Processing Document
+          </h2>
+
+          <p className="text-sm text-gray-500 mb-6">
+            {processText}
+          </p>
+
+          {/* Step indicators */}
+          <div className="text-left text-sm mb-4 space-y-1">
+            <p className={progress >= 30 ? "text-green-600" : "text-gray-400"}>
+              ✓ Cropping
+            </p>
+            <p className={progress >= 65 ? "text-green-600" : "text-gray-400"}>
+              ✓ Deskewing
+            </p>
+            <p className={progress >= 100 ? "text-green-600" : "text-gray-400"}>
+              ✓ Enhancing
+            </p>
+          </div>
+
+          {/* Progress bar */}
+          <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
+            <div
+              className="h-full bg-gradient-to-r from-blue-500 to-cyan-400 transition-all duration-200"
+              style={{ width: `${progress}%` }}
+            />
+          </div>
+
+          <p className="text-xs text-gray-400 mt-4">
+            🔒 Secure on-device processing
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // ----------------------------
+  // Main UI
   // ----------------------------
   return (
-    <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
-      <div className="w-full max-w-md bg-white rounded-xl shadow p-5">
-        <h1 className="text-xl font-semibold text-center mb-4">
-          Scan Your Form
-        </h1>
+    <div className="min-h-screen bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center p-4">
+      <div className="w-full max-w-md bg-white rounded-2xl shadow-xl overflow-hidden">
+        {/* Header */}
+        <div className="px-6 py-4 border-b">
+          <h1 className="text-lg font-semibold text-center">
+            Document Scan
+          </h1>
+          <p className="text-xs text-gray-500 text-center mt-1">
+            Align your document inside the frame
+          </p>
+        </div>
 
-        {!image && (
-          <>
-            <button
-              onClick={startCamera}
-              className="w-full bg-blue-600 text-white py-3 rounded-lg font-medium mb-3"
-            >
-              Tap to Scan
-            </button>
+        <div className="p-5">
+          {!image && (
+            <>
+              <button
+                onClick={startCamera}
+                className="w-full mb-4 bg-blue-600 hover:bg-blue-700 active:scale-[0.98] transition text-white py-3 rounded-xl font-semibold shadow"
+              >
+                Start Camera
+              </button>
 
-            <video
-              ref={videoRef}
-              autoPlay
-              playsInline
-              className="w-full rounded-lg border mb-3"
-            />
+              {/* Camera with overlay */}
+              <div className="relative rounded-xl overflow-hidden border bg-black">
+                <video
+                  ref={videoRef}
+                  autoPlay
+                  playsInline
+                  className="w-full h-64 object-cover"
+                />
 
-            <button
-              onClick={captureImage}
-              className="w-full bg-green-600 text-white py-3 rounded-lg font-medium"
-            >
-              Capture
-            </button>
-          </>
-        )}
+                {/* Scan frame */}
+                <div className="absolute inset-4 border-2 border-white/80 rounded-lg pointer-events-none" />
+              </div>
 
-        {image && (
-          <>
-            <img
-              src={image}
-              alt="Preview"
-              className="w-full rounded-lg border mb-4"
-            />
+              <button
+                onClick={captureImage}
+                className="w-full mt-4 bg-emerald-600 hover:bg-emerald-700 active:scale-[0.98] transition text-white py-3 rounded-xl font-semibold shadow"
+              >
+                Capture Photo
+              </button>
+            </>
+          )}
 
-            {/* Consent text */}
-            <div className="border rounded-lg p-3 text-sm text-gray-700 mb-4 max-h-40 overflow-y-auto">
-              <p>
-                I understand this document contains sensitive personal
-                information. By sending it to the email address(es) and/or phone
-                number I provide, I confirm the recipient information is correct
-                and authorized.
-              </p>
-              <br />
-              <p>
-                I understand that The Loss Prevention Group, Inc., dba LPG Live
-                Scan, is not responsible for misdirected messages, unauthorized
-                access to my email or phone, shared links, or any disclosure
-                resulting from the recipients I choose.
-              </p>
-            </div>
-
-            <label className="flex items-start gap-3 mb-4">
-              <input
-                type="checkbox"
-                className="mt-1 h-4 w-4"
-                checked={consentAccepted}
-                onChange={(e) => setConsentAccepted(e.target.checked)}
+          {image && (
+            <>
+              <img
+                src={image}
+                alt="Preview"
+                className="w-full rounded-xl border shadow mb-4 animate-[scale_0.95_to_1]"
               />
-              <span className="text-sm text-gray-700">
-                I have read and agree to the consent terms above
-              </span>
-            </label>
 
-            <div className="flex gap-3">
-              <button
-                onClick={() => {
-                  setImage(null);
-                  setConsentAccepted(false);
-                }}
-                className="flex-1 bg-gray-300 py-2 rounded-lg font-medium"
-              >
-                Retake
-              </button>
+              <div className="border rounded-xl p-3 text-xs text-gray-700 mb-4 max-h-40 overflow-y-auto bg-gray-50 leading-relaxed">
+                <p>
+                  I understand this document contains sensitive personal
+                  information. By sending it to the email address(es) and/or
+                  phone number I provide, I confirm the recipient information is
+                  correct and authorized.
+                </p>
+                <br />
+                <p>
+                  LPG Live Scan is not responsible for misdirected messages or
+                  unauthorized access resulting from recipients I choose.
+                </p>
+              </div>
 
-              <button
-                disabled={!consentAccepted}
-                onClick={confirmScan}
-                className={`flex-1 py-2 rounded-lg font-medium text-white ${
-                  consentAccepted
-                    ? "bg-blue-600"
-                    : "bg-blue-300 cursor-not-allowed"
-                }`}
-              >
-                Confirm
-              </button>
-            </div>
-          </>
-        )}
+              <label className="flex items-start gap-3 mb-5">
+                <input
+                  type="checkbox"
+                  className="mt-1 h-4 w-4 accent-blue-600"
+                  checked={consentAccepted}
+                  onChange={(e) => setConsentAccepted(e.target.checked)}
+                />
+                <span className="text-xs text-gray-700">
+                  I agree to the consent terms
+                </span>
+              </label>
 
-        <canvas ref={canvasRef} className="hidden" />
+              <div className="flex gap-3">
+                <button
+                  onClick={() => {
+                    setImage(null);
+                    setConsentAccepted(false);
+                  }}
+                  className="flex-1 bg-gray-200 hover:bg-gray-300 transition py-2.5 rounded-xl font-medium"
+                >
+                  Retake
+                </button>
+
+                <button
+                  disabled={!consentAccepted}
+                  onClick={confirmScan}
+                  className={`flex-1 py-2.5 rounded-xl font-semibold text-white transition ${
+                    consentAccepted
+                      ? "bg-blue-600 hover:bg-blue-700 shadow active:scale-[0.98]"
+                      : "bg-blue-300 cursor-not-allowed"
+                  }`}
+                >
+                  Continue
+                </button>
+              </div>
+            </>
+          )}
+
+          <canvas ref={canvasRef} className="hidden" />
+        </div>
       </div>
     </div>
   );

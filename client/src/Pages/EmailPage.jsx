@@ -4,22 +4,24 @@ export default function EmailPage({ image, onBack }) {
   const [primaryEmail, setPrimaryEmail] = useState("");
   const [extraEmails, setExtraEmails] = useState("");
   const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
+  const [error, setError] = useState(false);
 
   const handleSubmit = async () => {
     if (!primaryEmail || !image) return;
 
     setLoading(true);
+    setError(false);
 
     try {
       const emails = [
         primaryEmail,
         ...extraEmails
           .split(",")
-          .map(e => e.trim())
+          .map((e) => e.trim())
           .filter(Boolean),
       ];
 
-      // Convert base64 image to Blob
       const res = await fetch(image);
       const blob = await res.blob();
 
@@ -33,61 +35,224 @@ export default function EmailPage({ image, onBack }) {
         body: formData,
       });
 
-      if (!response.ok) {
-        throw new Error("Upload failed");
-      }
+      if (!response.ok) throw new Error("Upload failed");
 
-      const data = await response.json();
-      console.log("Success:", data);
-
-      alert("Email sent successfully!");
+      setSuccess(true);
+      if (navigator.vibrate) navigator.vibrate(50);
     } catch (err) {
       console.error(err);
-      alert("Failed to send email");
+      setError(true);
+      if (navigator.vibrate) navigator.vibrate([50, 50, 50]);
     } finally {
       setLoading(false);
     }
   };
 
+  // ----------------------------
+  // SUCCESS SCREEN
+  // ----------------------------
+  if (success) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center p-4">
+        <div className="w-full max-w-md bg-white rounded-2xl shadow-xl p-8 text-center">
+          <div className="mb-6 flex justify-center animate-[scale_0.9_to_1]">
+            <svg className="w-24 h-24" viewBox="0 0 52 52">
+              <circle
+                cx="26"
+                cy="26"
+                r="25"
+                fill="none"
+                stroke="#22c55e"
+                strokeWidth="3"
+                strokeDasharray="157"
+                strokeDashoffset="157"
+                className="animate-circle"
+              />
+              <path
+                fill="none"
+                stroke="#22c55e"
+                strokeWidth="3.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M14 27l7 7 17-17"
+                strokeDasharray="48"
+                strokeDashoffset="48"
+                className="animate-tick"
+              />
+            </svg>
+          </div>
+
+          <h2 className="text-xl font-semibold text-gray-800 mb-2">
+            Sent Successfully
+          </h2>
+
+          <p className="text-sm text-gray-500 mb-6">
+            Your processed document has been emailed securely.
+          </p>
+
+          <button
+            onClick={onBack}
+            className="w-full bg-blue-600 hover:bg-blue-700 transition text-white py-3 rounded-xl font-semibold"
+          >
+            Done
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // ----------------------------
+// FAILURE SCREEN
+// ----------------------------
+if (error) {
   return (
-    <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
-      <div className="w-full max-w-md bg-white rounded-xl shadow p-6">
-        <h2 className="text-lg font-semibold text-center mb-4">
-          Send Your Form
+    <div className="min-h-screen bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center p-4">
+      <div className="w-full max-w-md bg-white rounded-2xl shadow-xl p-8 text-center">
+        {/* Progressive Error Icon */}
+        <div className="mb-6 flex justify-center animate-[scale_0.9_to_1]">
+          <svg className="w-24 h-24" viewBox="0 0 52 52">
+            {/* Circle */}
+            <circle
+              cx="26"
+              cy="26"
+              r="25"
+              fill="none"
+              stroke="#ef4444"
+              strokeWidth="3"
+              strokeDasharray="157"
+              strokeDashoffset="157"
+              className="animate-circle"
+            />
+
+            {/* Cross */}
+            <path
+              fill="none"
+              stroke="#ef4444"
+              strokeWidth="3.5"
+              strokeLinecap="round"
+              d="M16 16l20 20M36 16l-20 20"
+              strokeDasharray="56"
+              strokeDashoffset="56"
+              className="animate-cross"
+            />
+          </svg>
+        </div>
+
+        <h2 className="text-xl font-semibold text-gray-800 mb-2">
+          Delivery Failed
         </h2>
 
-        <input
-          type="email"
-          placeholder="Primary email"
-          value={primaryEmail}
-          onChange={(e) => setPrimaryEmail(e.target.value)}
-          className="w-full border rounded-lg px-3 py-2 mb-4"
-        />
-
-        <input
-          type="text"
-          placeholder="Additional emails (comma separated)"
-          value={extraEmails}
-          onChange={(e) => setExtraEmails(e.target.value)}
-          className="w-full border rounded-lg px-3 py-2 mb-6"
-        />
+        <p className="text-sm text-gray-500 mb-6">
+          We couldn’t send your document. Please try again.
+        </p>
 
         <div className="flex gap-3">
           <button
-            onClick={onBack}
-            className="flex-1 bg-gray-300 py-2 rounded-lg"
+            onClick={() => setError(false)}
+            className="flex-1 bg-gray-200 hover:bg-gray-300 transition py-3 rounded-xl font-semibold"
           >
-            Back
+            Retry
           </button>
 
           <button
-            onClick={handleSubmit}
-            disabled={loading}
-            className="flex-1 bg-blue-600 text-white py-2 rounded-lg"
+            onClick={onBack}
+            className="flex-1 bg-blue-600 hover:bg-blue-700 transition text-white py-3 rounded-xl font-semibold"
           >
-            {loading ? "Sending..." : "Send Email"}
+            Back
           </button>
         </div>
+      </div>
+    </div>
+  );
+}
+
+
+
+  // ----------------------------
+  // MAIN EMAIL UI
+  // ----------------------------
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center p-4">
+      <div className="w-full max-w-md bg-white rounded-2xl shadow-xl overflow-hidden relative">
+        <div className="px-6 py-4 border-b">
+          <h2 className="text-lg font-semibold text-center">
+            Send Document
+          </h2>
+          <p className="text-xs text-gray-500 text-center mt-1">
+            ✓ Processing complete — ready to send
+          </p>
+        </div>
+
+        <div className="p-5 space-y-5">
+          <div>
+            <label className="block text-xs font-medium text-gray-600 mb-1">
+              Primary Email
+            </label>
+            <input
+              type="email"
+              placeholder="name@example.com"
+              value={primaryEmail}
+              onChange={(e) => setPrimaryEmail(e.target.value)}
+              className="w-full border rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-medium text-gray-600 mb-1">
+              Additional Emails (optional)
+            </label>
+            <input
+              type="text"
+              placeholder="email1@example.com, email2@example.com"
+              value={extraEmails}
+              onChange={(e) => setExtraEmails(e.target.value)}
+              className="w-full border rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+            <p className="text-[11px] text-gray-400 mt-1">
+              Separate multiple emails with commas
+            </p>
+          </div>
+
+          <div className="flex gap-3 pt-2">
+            <button
+              onClick={onBack}
+              disabled={loading}
+              className="flex-1 bg-gray-200 hover:bg-gray-300 transition py-2.5 rounded-xl font-medium disabled:opacity-50"
+            >
+              Back
+            </button>
+
+            <button
+              onClick={handleSubmit}
+              disabled={loading || !primaryEmail}
+              className={`flex-1 py-2.5 rounded-xl font-semibold text-white transition active:scale-[0.98] ${
+                loading || !primaryEmail
+                  ? "bg-blue-300 cursor-not-allowed"
+                  : "bg-blue-600 hover:bg-blue-700 shadow"
+              }`}
+            >
+              Send Email
+            </button>
+          </div>
+
+          <p className="text-[11px] text-gray-400 text-center">
+            🔒 Secure delivery via encrypted connection
+          </p>
+        </div>
+
+        {loading && (
+          <div className="absolute inset-0 bg-white/80 backdrop-blur-sm flex items-center justify-center">
+            <div className="text-center">
+              <div className="w-14 h-14 mx-auto rounded-full border-4 border-blue-200 border-t-blue-600 animate-spin mb-4" />
+              <p className="text-sm font-medium text-gray-700">
+                Sending document…
+              </p>
+              <p className="text-xs text-gray-400 mt-1">
+                Please wait
+              </p>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
