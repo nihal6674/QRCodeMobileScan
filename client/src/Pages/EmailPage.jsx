@@ -1,4 +1,6 @@
 import { useState } from "react";
+const API_BASE = import.meta.env.VITE_API_BASE_URL;
+
 
 export default function EmailPage({ image, onBack }) {
   const [primaryEmail, setPrimaryEmail] = useState("");
@@ -30,7 +32,7 @@ export default function EmailPage({ image, onBack }) {
       formData.append("consent", "true");
       formData.append("emails", emails.join(","));
 
-      const response = await fetch("http://127.0.0.1:8000/api/scan", {
+      const response = await fetch(`${API_BASE}/api/scan`, {
         method: "POST",
         body: formData,
       });
