@@ -129,7 +129,7 @@ export default function ScanPage() {
       <div className="w-full max-w-md bg-white rounded-2xl shadow-xl overflow-hidden">
         <div className="px-6 py-4 border-b text-center">
           <h1 className="text-lg font-semibold">Document Scan</h1>
-          <p className="text-xs text-gray-500 mt-1">
+          <p className="text-xs text-red-500 mt-1">
             Align your document inside the frame
           </p>
         </div>
@@ -181,9 +181,7 @@ export default function ScanPage() {
                 className="w-full rounded-xl border shadow mb-4"
               />
 
-              <div className="border rounded-xl p-3 text-xs bg-gray-50 mb-4">
-                I confirm the recipient information is correct and authorized.
-              </div>
+              
 
               <label className="flex gap-3 mb-5">
                 <input
@@ -193,7 +191,7 @@ export default function ScanPage() {
                   onChange={(e) => setConsentAccepted(e.target.checked)}
                 />
                 <span className="text-xs text-gray-700">
-                  I agree to the consent terms
+                 I understand this document contains sensitive personal information. By sending it to the email address(es) and/or phone number I provide, I confirm the recipient information is correct and authorized. I understand that The Loss Prevention Group, Inc., dba LPG Live Scan, is not responsible for misdirected messages, unauthorized access to my email or phone, shared links, or any disclosure resulting from the recipients I choose.
                 </span>
               </label>
 

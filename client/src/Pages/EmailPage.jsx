@@ -52,54 +52,65 @@ export default function EmailPage({ image, onBack }) {
   // SUCCESS SCREEN
   // ----------------------------
   if (success) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center p-4">
-        <div className="w-full max-w-md bg-white rounded-2xl shadow-xl p-8 text-center">
-          <div className="mb-6 flex justify-center animate-[scale_0.9_to_1]">
-            <svg className="w-24 h-24" viewBox="0 0 52 52">
-              <circle
-                cx="26"
-                cy="26"
-                r="25"
-                fill="none"
-                stroke="#22c55e"
-                strokeWidth="3"
-                strokeDasharray="157"
-                strokeDashoffset="157"
-                className="animate-circle"
-              />
-              <path
-                fill="none"
-                stroke="#22c55e"
-                strokeWidth="3.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M14 27l7 7 17-17"
-                strokeDasharray="48"
-                strokeDashoffset="48"
-                className="animate-tick"
-              />
-            </svg>
-          </div>
-
-          <h2 className="text-xl font-semibold text-gray-800 mb-2">
-            Sent Successfully
-          </h2>
-
-          <p className="text-sm text-gray-500 mb-6">
-            Your processed document has been emailed securely.
-          </p>
-
-          <button
-            onClick={onBack}
-            className="w-full bg-blue-600 hover:bg-blue-700 transition text-white py-3 rounded-xl font-semibold"
-          >
-            Done
-          </button>
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center p-4">
+      <div className="w-full max-w-md bg-white rounded-2xl shadow-xl p-8 text-center">
+        {/* Progressive Tick */}
+        <div className="mb-6 flex justify-center animate-[scale_0.9_to_1]">
+          <svg className="w-24 h-24" viewBox="0 0 52 52">
+            <circle
+              cx="26"
+              cy="26"
+              r="25"
+              fill="none"
+              stroke="#22c55e"
+              strokeWidth="3"
+              strokeDasharray="157"
+              strokeDashoffset="157"
+              className="animate-circle"
+            />
+            <path
+              fill="none"
+              stroke="#22c55e"
+              strokeWidth="3.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M14 27l7 7 17-17"
+              strokeDasharray="48"
+              strokeDashoffset="48"
+              className="animate-tick"
+            />
+          </svg>
         </div>
+
+        <h2 className="text-xl font-semibold text-gray-800 mb-2">
+          Sent Successfully
+        </h2>
+
+        <p className="text-sm text-gray-500 mb-4">
+          Your processed document has been emailed securely.
+        </p>
+
+        {/* Spam / Promotions notice */}
+        <div className="mb-6 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 flex gap-3 items-start text-left">
+          <div className="mt-0.5 text-amber-500 text-sm">⚠️</div>
+          <p className="text-xs text-amber-700 leading-relaxed">
+            If you don’t see the email in your inbox, please check your
+            <span className="font-semibold"> Spam or Promotions</span> folder.
+          </p>
+        </div>
+
+        <button
+          onClick={onBack}
+          className="w-full bg-blue-600 hover:bg-blue-700 transition text-white py-3 rounded-xl font-semibold"
+        >
+          Done
+        </button>
       </div>
-    );
-  }
+    </div>
+  );
+}
+
 
   // ----------------------------
 // FAILURE SCREEN
