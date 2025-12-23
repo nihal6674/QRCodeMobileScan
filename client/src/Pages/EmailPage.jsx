@@ -98,7 +98,7 @@ export default function EmailPage({ image, onBack }) {
           <div className="mt-0.5 text-amber-500 text-sm">⚠️</div>
           <p className="text-xs text-amber-700 leading-relaxed">
             If you don’t see the email in your inbox, please check your
-            <span className="font-semibold"> Spam or Promotions</span> folder.
+            <span className="font-semibold"> Junk or Spam</span> folder.
           </p>
         </div>
 
@@ -254,18 +254,23 @@ if (error) {
         </div>
 
         {loading && (
-          <div className="absolute inset-0 bg-white/80 backdrop-blur-sm flex items-center justify-center">
-            <div className="text-center">
-              <div className="w-14 h-14 mx-auto rounded-full border-4 border-blue-200 border-t-blue-600 animate-spin mb-4" />
-              <p className="text-sm font-medium text-gray-700">
-                Sending document…
-              </p>
-              <p className="text-xs text-gray-400 mt-1">
-                Please wait
-              </p>
-            </div>
-          </div>
-        )}
+  <div className="absolute inset-0 bg-white/80 backdrop-blur-sm flex items-center justify-center">
+    <div className="text-center max-w-xs">
+      <div className="w-14 h-14 mx-auto rounded-full border-4 border-blue-200 border-t-blue-600 animate-spin mb-4" />
+
+      <p className="text-sm font-medium text-gray-700">
+        Sending document…
+      </p>
+
+      <p className="text-xs text-gray-500 mt-1">
+        This usually takes about <span className="font-medium">2–3 seconds</span>.
+        If our server is waking up from sleep, it may take up to{" "}
+        <span className="font-medium">40 seconds</span>.
+      </p>
+    </div>
+  </div>
+)}
+
       </div>
     </div>
   );

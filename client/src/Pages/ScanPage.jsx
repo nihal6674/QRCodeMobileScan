@@ -41,19 +41,46 @@ export default function ScanPage() {
   };
 
   const captureImage = () => {
-    if (!cameraStarted || !videoRef.current) return;
+  if (!cameraStarted || !videoRef.current) return;
 
-    const video = videoRef.current;
-    const canvas = canvasRef.current;
+  const video = videoRef.current;
+  const canvas = canvasRef.current;
+  const ctx = canvas.getContext("2d");
 
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
-    canvas.getContext("2d").drawImage(video, 0, 0);
+  const videoWidth = video.videoWidth;
+  const videoHeight = video.videoHeight;
 
-    setImage(canvas.toDataURL("image/jpeg", 0.9));
-    stream?.getTracks().forEach((t) => t.stop());
-    setCameraStarted(false);
-  };
+  // Target portrait ratio (3:4)
+  const targetRatio = 3 / 4;
+  const videoRatio = videoWidth / videoHeight;
+
+  let sx, sy, sw, sh;
+
+  if (videoRatio > targetRatio) {
+    // Video is wider → crop sides
+    sh = videoHeight;
+    sw = sh * targetRatio;
+    sx = (videoWidth - sw) / 2;
+    sy = 0;
+  } else {
+    // Video is taller → crop top/bottom
+    sw = videoWidth;
+    sh = sw / targetRatio;
+    sx = 0;
+    sy = (videoHeight - sh) / 2;
+  }
+
+  canvas.width = sw;
+  canvas.height = sh;
+
+  ctx.drawImage(video, sx, sy, sw, sh, 0, 0, sw, sh);
+
+  setImage(canvas.toDataURL("image/jpeg", 0.95));
+
+  stream?.getTracks().forEach((t) => t.stop());
+  setCameraStarted(false);
+};
+
 
   // ----------------------------
   // Fake processing flow
@@ -156,13 +183,14 @@ export default function ScanPage() {
                 {cameraStarted ? "Camera Active" : "Start Camera"}
               </button>
 
-              <div className="relative rounded-xl overflow-hidden border bg-black">
+              <div className="relative rounded-xl overflow-hidden border bg-black aspect-[3/4]">
                 <video
-                  ref={videoRef}
-                  autoPlay
-                  playsInline
-                  className="w-full h-64 object-cover"
-                />
+  ref={videoRef}
+  autoPlay
+  playsInline
+  className="w-full h-full object-cover"
+/>
+
 
                 {!cameraStarted && (
                   <div className="absolute inset-0 flex items-center justify-center px-4">
