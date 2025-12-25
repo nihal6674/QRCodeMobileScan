@@ -1,6 +1,7 @@
 import { useRef, useState } from "react";
 import EmailPage from "./EmailPage";
 import StepItem from "../components/StepItem";
+import logo from "../assets/logo.png";
 
 export default function ScanPage() {
   const videoRef = useRef(null);
@@ -162,11 +163,21 @@ export default function ScanPage() {
   // Main UI
   // ----------------------------
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-slate-100 to-slate-200 flex items-start justify-center p-4 pt-6">
+
       <div className="w-full max-w-md bg-white rounded-2xl shadow-xl overflow-hidden">
-        <div className="px-6 py-4 border-b text-center">
-          <h1 className="text-lg font-semibold">Document Scan</h1>
-        </div>
+        <div className="px-6 py-4 border-b text-center space-y-2">
+  <img
+    src={logo}          // import logo at top
+    alt="Company Logo"
+    className="h-14 mx-auto object-contain"
+  />
+  <h1 className="text-lg font-semibold">Document Scan</h1>
+  <p className="text-xs text-gray-500">
+    Secure • Encrypted • Trusted
+  </p>
+</div>
+
 
         <div className="p-5">
           {!image && (
@@ -219,11 +230,14 @@ export default function ScanPage() {
 
           {image && (
             <>
-              <img
-                src={image}
-                alt="Preview"
-                className="w-full rounded-xl border shadow mb-4"
-              />
+              <div className="w-full aspect-[3/4] rounded-xl border shadow mb-4 overflow-hidden bg-black">
+  <img
+    src={image}
+    alt="Preview"
+    className="w-full h-full object-cover"
+  />
+</div>
+
 
               <label className="flex gap-3 mb-5">
                 <input
