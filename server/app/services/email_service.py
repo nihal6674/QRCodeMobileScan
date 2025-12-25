@@ -44,37 +44,39 @@ def send_email_with_attachment(
     message = Mail(
         from_email=(SENDGRID_FROM_EMAIL, SENDGRID_FROM_NAME),
         to_emails=to_emails,  # ✅ LIST OF EMAILS (THIS IS THE KEY CHANGE)
-        subject="Your Request for Live Scan Service Form",
-        html_content="""
+        subject="Your Completed Request for Live Scan Service Form",
+        html_content = """
 <p>Dear Customer,</p>
 
 <p>
 Attached is your completed <strong>Request for Live Scan Service</strong> form,
-provided to you by <strong>The Loss Prevention Group, Inc.</strong>.
+provided by <strong>LPG Live Scan</strong>, a division of
+<strong>The Loss Prevention Group, Inc.</strong>.
 </p>
 
 <p>
-This document contains sensitive personal information. We recommend that you
-download and store it securely for your records.
+This document contains sensitive personal information. Please download and
+store it securely for your records.
 </p>
 
 <p>
-If you did not request this document or believe you have received it in error,
+If you did not request this document or believe you received it in error,
 please contact us immediately and delete the attachment.
 </p>
 
 <p style="margin-top: 20px;">
-Thank you for choosing <strong>The Loss Prevention Group, Inc.</strong><br/>
+Thank you for choosing <strong>LPG Live Scan</strong>.
 </p>
 
 <hr style="margin: 20px 0;" />
 
 <p style="font-size: 12px; color: #666;">
-This email was sent at your request. The Loss Prevention Group, Inc. is not
-responsible for unauthorized access resulting from the recipient’s email
-security, shared access, or forwarding of this message.
+This email was sent at your request. LPG Live Scan is not responsible for
+unauthorized access resulting from the recipient’s email security settings,
+shared access, or forwarding of this message.
 </p>
-        """,
+"""
+,
     )
 
     # -----------------------------
