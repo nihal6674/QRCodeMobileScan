@@ -3,7 +3,7 @@ import { useParams } from "react-router-dom";
 import logo from "../assets/logo.png";
 
 
-const API_BASE = import.meta.env.FRONTEND_URL;
+const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
 export default function DownloadPage() {
   const { token } = useParams();
