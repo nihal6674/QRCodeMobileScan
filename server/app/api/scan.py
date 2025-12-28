@@ -11,26 +11,27 @@ from uuid import uuid4
 import tempfile
 import shutil
 import asyncio
+import os
 
 from slowapi import Limiter
 from slowapi.util import get_remote_address
 
 from app.services.pdf_service import image_to_pdf
 from app.services.email_service import send_email_with_attachment
+from app.utils.token_store import create_download_token
+from app.services.sms_service import send_sms
 
-# -----------------------------
-# Router + Rate Limiter
-# -----------------------------
+
 router = APIRouter()
 limiter = Limiter(key_func=get_remote_address)
 
-# -----------------------------
-# Base temp directory (ephemeral)
-# -----------------------------
 BASE_TEMP_DIR = Path(tempfile.gettempdir()) / "live_scan"
 BASE_TEMP_DIR.mkdir(parents=True, exist_ok=True)
 
 MAX_FILE_SIZE = 5 * 1024 * 1024  # 5MB
+FRONTEND_BASE_URL = os.getenv("FRONTEND_BASE_URL")
+
+
 
 
 @router.post("/scan")
@@ -39,30 +40,19 @@ async def scan_form(
     request: Request,
     file: UploadFile = File(...),
     consent: bool = Form(...),
-    emails: str = Form(...)
+    emails: str = Form(...),
+    phone: str | None = Form(None),
 ):
-    # -----------------------------
-    # 1. Validate consent
-    # -----------------------------
     if not consent:
         raise HTTPException(status_code=400, detail="Consent is required")
 
-    # -----------------------------
-    # 2. Validate file type
-    # -----------------------------
     if not file.content_type or not file.content_type.startswith("image/"):
         raise HTTPException(status_code=400, detail="Invalid image file")
 
-    # -----------------------------
-    # 3. Validate emails
-    # -----------------------------
     email_list = [e.strip() for e in emails.split(",") if e.strip()]
     if not email_list:
         raise HTTPException(status_code=400, detail="At least one email required")
 
-    # -----------------------------
-    # 4. Create per-request directory
-    # -----------------------------
     request_id = str(uuid4())
     request_dir = BASE_TEMP_DIR / request_id
     request_dir.mkdir(parents=True, exist_ok=True)
@@ -71,11 +61,11 @@ async def scan_form(
     pdf_path = request_dir / "output.pdf"
 
     email_sent = False
+    sms_token = None
+    sms_pin = None
+    download_url = None
 
     try:
-        # -----------------------------
-        # 5. Read + validate file size
-        # -----------------------------
         contents = await file.read()
         if len(contents) > MAX_FILE_SIZE:
             raise HTTPException(status_code=413, detail="File too large")
@@ -83,18 +73,12 @@ async def scan_form(
         with open(input_path, "wb") as f:
             f.write(contents)
 
-        # -----------------------------
-        # 6. Generate PDF directly
-        # -----------------------------
         generated_pdf = image_to_pdf(input_path)
         shutil.move(generated_pdf, pdf_path)
 
         if not pdf_path.exists():
             raise RuntimeError("PDF generation failed")
 
-        # -----------------------------
-        # 7. Send email (non-blocking)
-        # -----------------------------
         await asyncio.to_thread(
             send_email_with_attachment,
             to_emails=email_list,
@@ -102,6 +86,26 @@ async def scan_form(
         )
 
         email_sent = True
+
+        # -----------------------------
+        # PHASE 2: TOKEN + PIN
+        # -----------------------------
+        if phone:
+            sms_token, sms_pin = create_download_token(
+                file_path=str(pdf_path)
+            )
+
+            if not FRONTEND_BASE_URL:
+                raise RuntimeError("FRONTEND_BASE_URL not set")
+
+            download_url = f"{FRONTEND_BASE_URL}/download/{sms_token}"
+
+            send_sms(
+                phone=phone,
+                download_url=download_url,
+                pin=sms_pin,
+            )
+
 
     except HTTPException:
         raise
@@ -114,19 +118,20 @@ async def scan_form(
         )
 
     finally:
-        # -----------------------------
-        # 8. Cleanup after success
-        # -----------------------------
-        if email_sent and request_dir.exists():
+        # ❗ Only cleanup if NO SMS link exists
+        if email_sent and not phone and request_dir.exists():
             shutil.rmtree(request_dir, ignore_errors=True)
 
-    # -----------------------------
-    # 9. Response
-    # -----------------------------
     return {
         "status": "success",
         "sent_to": email_list,
+        "sms": {
+            "enabled": bool(phone),
+            "download_url": download_url,
+            "pin": sms_pin,
+        }
     }
+
 
 
 

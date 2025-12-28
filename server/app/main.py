@@ -1,4 +1,7 @@
 import os
+import asyncio
+
+
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
@@ -8,7 +11,10 @@ from slowapi.util import get_remote_address
 from slowapi.middleware import SlowAPIMiddleware
 from slowapi.errors import RateLimitExceeded
 
+from app.utils.token_store import cleanup_expired_tokens
 from app.api.scan import router as scan_router
+from app.api.download import router as download_router
+
 
 
 # -----------------------------
@@ -72,8 +78,18 @@ else:
 # ROUTES
 # -----------------------------
 app.include_router(scan_router, prefix="/api")
+app.include_router(download_router)
 
 
 @app.get("/", tags=["health"])
 def health():
     return {"status": "ok"}
+
+@app.on_event("startup")
+async def start_cleanup_task():
+    async def cleanup_loop():
+        while True:
+            cleanup_expired_tokens()
+            await asyncio.sleep(60)  # every 1 minute
+
+    asyncio.create_task(cleanup_loop())

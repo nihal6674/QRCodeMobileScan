@@ -1,11 +1,16 @@
-import React from 'react'
-import ScanPage from './Pages/ScanPage'
-const App = () => {
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import ScanPage from "./Pages/ScanPage";
+import DownloadPage from "./Pages/DownloadPage";
+
+function App() {
   return (
-    <>
-      <ScanPage/>
-    </>
-  )
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<ScanPage />} />
+        <Route path="/download/:token" element={<DownloadPage />} />
+      </Routes>
+    </BrowserRouter>
+  );
 }
 
-export default App
+export default App;

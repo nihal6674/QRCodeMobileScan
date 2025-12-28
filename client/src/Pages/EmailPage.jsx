@@ -1,5 +1,6 @@
 import { useState } from "react";
 const API_BASE = import.meta.env.VITE_API_BASE_URL;
+import PhoneInput from "react-phone-number-input";
 
 
 export default function EmailPage({ image, onBack }) {
@@ -8,47 +9,66 @@ export default function EmailPage({ image, onBack }) {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState(false);
+  const [phone, setPhone] = useState("");
+  const [smsInfo, setSmsInfo] = useState(null);
+  const [countryCode, setCountryCode] = useState("+1");
 
   const handleSubmit = async () => {
-    if (!primaryEmail || !image) return;
+  if (!primaryEmail || !image) return;
 
-    setLoading(true);
-    setError(false);
+  
 
-    try {
-      const emails = [
-        primaryEmail,
-        ...extraEmails
-          .split(",")
-          .map((e) => e.trim())
-          .filter(Boolean),
-      ];
+  setLoading(true);
+  setError(false);
 
-      const res = await fetch(image);
-      const blob = await res.blob();
+  try {
+    const emails = [
+      primaryEmail,
+      ...extraEmails
+        .split(",")
+        .map((e) => e.trim())
+        .filter(Boolean),
+    ];
 
-      const formData = new FormData();
-      formData.append("file", blob, "scan.jpg");
-      formData.append("consent", "true");
-      formData.append("emails", emails.join(","));
+    const res = await fetch(image);
+    const blob = await res.blob();
 
-      const response = await fetch(`${API_BASE}/api/scan`, {
-        method: "POST",
-        body: formData,
-      });
+    const formData = new FormData();
+    formData.append("file", blob, "scan.jpg");
+    formData.append("consent", "true");
+    formData.append("emails", emails.join(","));
 
-      if (!response.ok) throw new Error("Upload failed");
+    if (phone) {
+  formData.append("phone", phone);
+}
 
-      setSuccess(true);
-      if (navigator.vibrate) navigator.vibrate(50);
-    } catch (err) {
-      console.error(err);
-      setError(true);
-      if (navigator.vibrate) navigator.vibrate([50, 50, 50]);
-    } finally {
-      setLoading(false);
+
+
+    const response = await fetch(`${API_BASE}/api/scan`, {
+      method: "POST",
+      body: formData,
+    });
+
+    if (!response.ok) throw new Error("Upload failed");
+
+    const data = await response.json();
+
+    if (data.sms?.enabled) {
+      setSmsInfo(data.sms);
     }
-  };
+
+    setSuccess(true);
+    navigator.vibrate?.(50);
+
+  } catch (err) {
+    console.error(err);
+    setError(true);
+    navigator.vibrate?.([50, 50, 50]);
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   // ----------------------------
   // SUCCESS SCREEN
@@ -89,9 +109,16 @@ export default function EmailPage({ image, onBack }) {
           Sent Successfully
         </h2>
 
-        <p className="text-sm text-gray-500 mb-4">
-          Your processed document has been emailed securely.
+        <p className="text-sm text-gray-500 mb-3">
+          Your document has been sent securely to the email address you
+          provided.
         </p>
+
+        {smsInfo && (
+          <p className="text-sm text-gray-600 mb-4">
+            A secure SMS download link has also been sent to your mobile number.
+          </p>
+        )}
 
         {/* Spam / Promotions notice */}
         <div className="mb-6 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 flex gap-3 items-start text-left">
@@ -104,7 +131,6 @@ export default function EmailPage({ image, onBack }) {
 
         <button
           onClick={() => (window.location.href = "/")}
-
           className="w-full bg-blue-600 hover:bg-blue-700 transition text-white py-3 rounded-xl font-semibold"
         >
           Done
@@ -189,9 +215,7 @@ if (error) {
     <div className="min-h-screen bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center p-4">
       <div className="w-full max-w-md bg-white rounded-2xl shadow-xl overflow-hidden relative">
         <div className="px-6 py-4 border-b">
-          <h2 className="text-lg font-semibold text-center">
-            Send Document
-          </h2>
+          <h2 className="text-lg font-semibold text-center">Send Document</h2>
           <p className="text-xs text-green-500 text-center mt-1">
             ✓ Processing complete — ready to send
           </p>
@@ -227,6 +251,26 @@ if (error) {
             </p>
           </div>
 
+          <div>
+  <label className="block text-xs font-medium text-gray-600 mb-1">
+    Mobile Number (optional – SMS)
+  </label>
+
+  <PhoneInput
+    international
+    defaultCountry="US"
+    value={phone}
+    onChange={setPhone}
+    className="PhoneInput"
+  />
+
+  <p className="text-[11px] text-gray-400 mt-1">
+    We’ll send a secure SMS download link to this number
+  </p>
+</div>
+
+
+
           <div className="flex gap-3 pt-2">
             <button
               onClick={onBack}
@@ -245,7 +289,7 @@ if (error) {
                   : "bg-blue-600 hover:bg-blue-700 shadow"
               }`}
             >
-              Send Email
+              Send 
             </button>
           </div>
 
@@ -255,23 +299,23 @@ if (error) {
         </div>
 
         {loading && (
-  <div className="absolute inset-0 bg-white/80 backdrop-blur-sm flex items-center justify-center">
-    <div className="text-center max-w-xs">
-      <div className="w-14 h-14 mx-auto rounded-full border-4 border-blue-200 border-t-blue-600 animate-spin mb-4" />
+          <div className="absolute inset-0 bg-white/80 backdrop-blur-sm flex items-center justify-center">
+            <div className="text-center max-w-xs">
+              <div className="w-14 h-14 mx-auto rounded-full border-4 border-blue-200 border-t-blue-600 animate-spin mb-4" />
 
-      <p className="text-sm font-medium text-gray-700">
-        Sending document…
-      </p>
+              <p className="text-sm font-medium text-gray-700">
+                Sending document…
+              </p>
 
-      <p className="text-xs text-gray-500 mt-1">
-        This usually takes about <span className="font-medium">2–3 seconds</span>.
-        If our server is waking up from sleep, it may take up to{" "}
-        <span className="font-medium">40 seconds</span>.
-      </p>
-    </div>
-  </div>
-)}
-
+              <p className="text-xs text-gray-500 mt-1">
+                This usually takes about{" "}
+                <span className="font-medium">2–3 seconds</span>. If our server
+                is waking up from sleep, it may take up to{" "}
+                <span className="font-medium">40 seconds</span>.
+              </p>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

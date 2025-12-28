@@ -54,3 +54,19 @@
   animation: scale-in 0.25s ease-out;
 }
 
+.PhoneInput {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.PhoneInputInput {
+  width: 100%;
+  border: 1px solid #d1d5db;
+  border-radius: 0.75rem;
+  padding: 0.5rem 0.75rem;
+}
+
+.PhoneInputInput:focus {
+  outline: none;
+  border-color: #3b82f6;
+}
