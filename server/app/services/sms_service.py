@@ -11,7 +11,7 @@ if not all([TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_FROM_NUMBER]):
 client = Client(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN)
 
 
-def send_sms(phone: str, download_url: str, pin: str, expiry_minutes: int = 30):
+def send_sms(phone: str, download_url: str, pin: str, expiry_minutes: int = 60):
     message_body = (
         "Your Live Scan form from The Loss Prevention Group, Inc. is ready.\n\n"
         f"Secure download link:\n{download_url}\n\n"

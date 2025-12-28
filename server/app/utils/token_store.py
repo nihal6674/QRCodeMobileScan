@@ -5,7 +5,7 @@ import random
 # In-memory token store
 DOWNLOAD_TOKENS = {}
 
-DEFAULT_EXPIRY_MINUTES = 30
+DEFAULT_EXPIRY_MINUTES = 60
 
 
 def create_download_token(file_path: str, expiry_minutes: int = DEFAULT_EXPIRY_MINUTES):
