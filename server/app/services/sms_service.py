@@ -16,7 +16,7 @@ def send_sms(phone: str, download_url: str, pin: str, expiry_minutes: int = 60):
         "Your Live Scan form from The Loss Prevention Group, Inc. is ready.\n\n"
         f"Secure download link:\n{download_url}\n\n"
         f"PIN: {pin}\n"
-        f"This link expires in {expiry_minutes} minutes.\n\n"
+        f"This link expires in 1 hour.\n\n"
         "Do not share this message."
     )
 
