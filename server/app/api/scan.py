@@ -20,6 +20,7 @@ from app.services.pdf_service import image_to_pdf
 from app.services.email_service import send_email_with_attachment
 from app.utils.token_store import create_download_token
 from app.services.sms_service import send_sms
+from app.services.image_processing import process_image
 
 
 router = APIRouter()
@@ -58,6 +59,7 @@ async def scan_form(
     request_dir.mkdir(parents=True, exist_ok=True)
 
     input_path = request_dir / "input.jpg"
+    processed_path = request_dir / "processed.jpg"
     pdf_path = request_dir / "output.pdf"
 
     email_sent = False
@@ -66,6 +68,9 @@ async def scan_form(
     download_url = None
 
     try:
+        # -----------------------------
+        # Read + validate image
+        # -----------------------------
         contents = await file.read()
         if len(contents) > MAX_FILE_SIZE:
             raise HTTPException(status_code=413, detail="File too large")
@@ -73,22 +78,33 @@ async def scan_form(
         with open(input_path, "wb") as f:
             f.write(contents)
 
-        generated_pdf = image_to_pdf(input_path)
+        # -----------------------------
+        # IMAGE PROCESSING (CROP + DESKEW + ENHANCE)
+        # -----------------------------
+        processed_image = process_image(input_path)
+        shutil.move(processed_image, processed_path)
+
+        # -----------------------------
+        # Generate PDF
+        # -----------------------------
+        generated_pdf = image_to_pdf(processed_path)
         shutil.move(generated_pdf, pdf_path)
 
         if not pdf_path.exists():
             raise RuntimeError("PDF generation failed")
 
+        # -----------------------------
+        # Send email
+        # -----------------------------
         await asyncio.to_thread(
             send_email_with_attachment,
             to_emails=email_list,
             pdf_path=pdf_path,
         )
-
         email_sent = True
 
         # -----------------------------
-        # PHASE 2: TOKEN + PIN
+        # PHASE 2: SMS TOKEN + PIN
         # -----------------------------
         if phone:
             sms_token, sms_pin = create_download_token(
@@ -106,7 +122,6 @@ async def scan_form(
                 pin=sms_pin,
             )
 
-
     except HTTPException:
         raise
 
@@ -114,11 +129,18 @@ async def scan_form(
         print("ERROR:", str(e))
         raise HTTPException(
             status_code=500,
-            detail="Failed to process scan or send email"
+            detail="Failed to process scan"
         )
 
     finally:
-        # ❗ Only cleanup if NO SMS link exists
+        # -----------------------------
+        # CLEANUP
+        # -----------------------------
+        # Always remove images
+        input_path.unlink(missing_ok=True)
+        processed_path.unlink(missing_ok=True)
+
+        # Remove entire folder ONLY if SMS is not enabled
         if email_sent and not phone and request_dir.exists():
             shutil.rmtree(request_dir, ignore_errors=True)
 
@@ -129,7 +151,7 @@ async def scan_form(
             "enabled": bool(phone),
             "download_url": download_url,
             "pin": sms_pin,
-        }
+        },
     }
 
 

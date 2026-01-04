@@ -13,12 +13,15 @@ client = Client(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN)
 
 def send_sms(phone: str, download_url: str, pin: str, expiry_minutes: int = 60):
     message_body = (
-        "Your Live Scan form from The Loss Prevention Group, Inc. is ready.\n\n"
-        f"Secure download link:\n{download_url}\n\n"
-        f"PIN: {pin}\n"
-        f"This link expires in 1 hour.\n\n"
-        "Do not share this message."
-    )
+    "[LPG Live Scan]\n"
+    "Your Live Scan form from The Loss Prevention Group, Inc. is ready.\n\n"
+    f"Secure download link:\n{download_url}\n\n"
+    f"PIN: {pin}\n"
+    "This link expires in 1 hour.\n\n"
+    "Do not share this message.\n"
+    "Reply STOP to opt out."
+)
+
 
     message = client.messages.create(
         body=message_body,

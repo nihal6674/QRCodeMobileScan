@@ -12,6 +12,7 @@ export default function EmailPage({ image, onBack }) {
   const [phone, setPhone] = useState("");
   const [smsInfo, setSmsInfo] = useState(null);
   const [countryCode, setCountryCode] = useState("+1");
+  const [smsConsent, setSmsConsent] = useState(false);
 
   const handleSubmit = async () => {
   if (!primaryEmail || !image) return;
@@ -38,9 +39,10 @@ export default function EmailPage({ image, onBack }) {
     formData.append("consent", "true");
     formData.append("emails", emails.join(","));
 
-    if (phone) {
+    if (phone && smsConsent) {
   formData.append("phone", phone);
 }
+
 
 
 
@@ -58,6 +60,8 @@ export default function EmailPage({ image, onBack }) {
     }
 
     setSuccess(true);
+    setSmsConsent(false);
+
     navigator.vibrate?.(50);
 
   } catch (err) {
@@ -253,8 +257,9 @@ if (error) {
 
           <div>
   <label className="block text-xs font-medium text-gray-600 mb-1">
-    Mobile Number (optional – SMS)
-  </label>
+  Mobile Number (optional – secure SMS link)
+</label>
+
 
   <PhoneInput
     international
@@ -267,6 +272,19 @@ if (error) {
   <p className="text-[11px] text-gray-400 mt-1">
     We’ll send a secure SMS download link to this number
   </p>
+  <div className="flex items-start gap-2 mt-2">
+  <input
+    type="checkbox"
+    checked={smsConsent}
+    onChange={(e) => setSmsConsent(e.target.checked)}
+    className="mt-1"
+  />
+  <p className="text-[11px] text-gray-600 leading-snug">
+    I agree to receive a <b>one-time SMS</b> with a secure download link.
+    Message & data rates may apply. Reply STOP to opt out.
+  </p>
+</div>
+
 </div>
 
 
