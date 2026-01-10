@@ -40,11 +40,11 @@ FRONTEND_BASE_URL = os.getenv("FRONTEND_BASE_URL")
 async def scan_form(
     request: Request,
     file: UploadFile = File(...),
-    consent: bool = Form(...),
+    consent: str = Form(...),   # 🔥 FIX
     emails: str = Form(...),
     phone: str | None = Form(None),
 ):
-    if not consent:
+    if consent.lower() != "true":
         raise HTTPException(status_code=400, detail="Consent is required")
 
     if not file.content_type or not file.content_type.startswith("image/"):
@@ -60,7 +60,7 @@ async def scan_form(
 
     input_path = request_dir / "input.jpg"
     processed_path = request_dir / "processed.jpg"
-    pdf_path = request_dir / "output.pdf"
+    pdf_path = request_dir / "LiveScanForm.pdf"
 
     email_sent = False
     sms_token = None
