@@ -12,6 +12,7 @@ export default function ScanPage() {
   const [cameraStarted, setCameraStarted] = useState(false);
   const [step, setStep] = useState("scan");
   const [consentAccepted, setConsentAccepted] = useState(false);
+  const [showPreview, setShowPreview] = useState(false);
 
   // Processing UI
   const [processing, setProcessing] = useState(false);
@@ -230,13 +231,24 @@ export default function ScanPage() {
 
           {image && (
             <>
-              <div className="w-full aspect-[3/4] rounded-xl border shadow mb-4 overflow-hidden bg-black">
+              <div
+  onClick={() => setShowPreview(true)}
+  className="relative w-full aspect-[3/4] rounded-xl border shadow mb-4 overflow-hidden bg-black cursor-zoom-in"
+>
   <img
     src={image}
     alt="Preview"
     className="w-full h-full object-cover"
   />
+
+  {/* Tap hint */}
+  <div className="absolute inset-0 flex items-center justify-center bg-black/20 opacity-0 hover:opacity-100 transition">
+    <span className="text-white text-sm font-semibold bg-black/60 px-3 py-1 rounded-lg">
+      Tap to preview
+    </span>
+  </div>
 </div>
+
 
 
               <label className="flex gap-3 mb-5">
@@ -280,6 +292,29 @@ export default function ScanPage() {
           <canvas ref={canvasRef} className="hidden" />
         </div>
       </div>
+      {showPreview && (
+  <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4">
+    <div className="relative max-w-md w-full">
+      {/* Close button */}
+      <button
+        onClick={() => setShowPreview(false)}
+        className="absolute -top-3 -right-3 bg-white text-black w-9 h-9 rounded-full shadow flex items-center justify-center text-lg font-bold"
+      >
+        ✕
+      </button>
+
+      {/* Image */}
+      <div className="rounded-xl overflow-hidden bg-black">
+        <img
+          src={image}
+          alt="Full Preview"
+          className="w-full h-auto max-h-[90vh] object-contain"
+        />
+      </div>
+    </div>
+  </div>
+)}
+
     </div>
   );
 }
