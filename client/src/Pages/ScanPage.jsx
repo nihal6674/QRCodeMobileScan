@@ -154,12 +154,14 @@ export default function ScanPage() {
             />
           </div>
 
-          <div className="w-full bg-gray-200 rounded-full h-3">
-            <div
-              className="h-full bg-gradient-to-r from-blue-500 to-cyan-400"
-              style={{ width: `${progress}%` }}
-            />
-          </div>
+          <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
+  <div
+    className="h-full bg-gradient-to-r from-blue-500 to-cyan-400 transition-[width] duration-500 ease-out"
+    style={{ width: `${progress}%` }}
+  />
+  
+</div>
+
 
           <p className="text-xs text-gray-400 mt-4">
             🔒 Secure on-device processing

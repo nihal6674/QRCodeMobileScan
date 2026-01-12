@@ -26,14 +26,15 @@ const StepItem = ({ label, done, active, color = "brand" }) => {
       </div>
 
       <span
-        className={
-          done
-            ? "text-green-600 font-medium"
-            : active
-            ? "text-blue-600"
-            : "text-gray-400"
-        }
-      >
+  className={
+    done
+      ? "text-green-600 font-medium"
+      : active
+      ? "text-blue-600 animate-pulse"
+      : "text-gray-400"
+  }
+>
+
         {label}
       </span>
     </div>
