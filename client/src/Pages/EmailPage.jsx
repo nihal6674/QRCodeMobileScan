@@ -135,11 +135,10 @@ export default function EmailPage({ image, onBack, consentAccepted }) {
                     <span>Email</span>
                   </div>
                   <span className="text-xs text-gray-500 text-right">
-  {sentEmails.length === 1
-    ? sentEmails[0]
-    : `${sentEmails[0]} +${sentEmails.length - 1} more`}
-</span>
-
+                    {sentEmails.length === 1
+                      ? sentEmails[0]
+                      : `${sentEmails[0]} +${sentEmails.length - 1} more`}
+                  </span>
                 </div>
               )}
 
@@ -255,15 +254,19 @@ export default function EmailPage({ image, onBack, consentAccepted }) {
         <div className="p-5 space-y-5">
           <div>
             <label className="block text-xs font-medium text-gray-600 mb-1">
-              Primary Email
+              Primary Email <span className="text-red-500">*</span>
             </label>
             <input
-              type="email"
-              placeholder="name@example.com"
-              value={primaryEmail}
-              onChange={(e) => setPrimaryEmail(e.target.value)}
-              className="w-full border rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
+  type="email"
+  readOnly
+  onFocus={(e) => e.target.removeAttribute("readOnly")}
+  onBlur={(e) => e.target.setAttribute("readOnly", true)}
+  placeholder="name@example.com"
+  value={primaryEmail}
+  onChange={(e) => setPrimaryEmail(e.target.value)}
+  className="w-full border rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+/>
+
           </div>
 
           <div>

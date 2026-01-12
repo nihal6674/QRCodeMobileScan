@@ -29,60 +29,69 @@ export default function ScanPage() {
   // ----------------------------
   // Camera
   // ----------------------------
-  const startCamera = async () => {
-    try {
-      const mediaStream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: "environment" },
-      });
-      videoRef.current.srcObject = mediaStream;
-      setStream(mediaStream);
-      setCameraStarted(true);
-    } catch {
-      alert("Camera access denied or unavailable");
-    }
-  };
-
-  const captureImage = () => {
-  if (!cameraStarted || !videoRef.current) return;
-
-  const video = videoRef.current;
-  const canvas = canvasRef.current;
-  const ctx = canvas.getContext("2d");
-
-  const videoWidth = video.videoWidth;
-  const videoHeight = video.videoHeight;
-
-  // Target portrait ratio (3:4)
-  const targetRatio = 3 / 4;
-  const videoRatio = videoWidth / videoHeight;
-
-  let sx, sy, sw, sh;
-
-  if (videoRatio > targetRatio) {
-    // Video is wider → crop sides
-    sh = videoHeight;
-    sw = sh * targetRatio;
-    sx = (videoWidth - sw) / 2;
-    sy = 0;
-  } else {
-    // Video is taller → crop top/bottom
-    sw = videoWidth;
-    sh = sw / targetRatio;
-    sx = 0;
-    sy = (videoHeight - sh) / 2;
+  const toggleCamera = async () => {
+  // STOP camera
+  if (cameraStarted) {
+    stream?.getTracks().forEach((t) => t.stop());
+    setStream(null);
+    setCameraStarted(false);
+    return;
   }
 
-  canvas.width = sw;
-  canvas.height = sh;
-
-  ctx.drawImage(video, sx, sy, sw, sh, 0, 0, sw, sh);
-
-  setImage(canvas.toDataURL("image/jpeg", 0.95));
-
-  stream?.getTracks().forEach((t) => t.stop());
-  setCameraStarted(false);
+  // START camera
+  try {
+    const mediaStream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: "environment" },
+    });
+    videoRef.current.srcObject = mediaStream;
+    setStream(mediaStream);
+    setCameraStarted(true);
+  } catch {
+    alert("Camera access denied or unavailable");
+  }
 };
 
+
+  const captureImage = () => {
+    if (!cameraStarted || !videoRef.current) return;
+
+    const video = videoRef.current;
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext("2d");
+
+    const videoWidth = video.videoWidth;
+    const videoHeight = video.videoHeight;
+
+    // Target portrait ratio (3:4)
+    const targetRatio = 3 / 4;
+    const videoRatio = videoWidth / videoHeight;
+
+    let sx, sy, sw, sh;
+
+    if (videoRatio > targetRatio) {
+      // Video is wider → crop sides
+      sh = videoHeight;
+      sw = sh * targetRatio;
+      sx = (videoWidth - sw) / 2;
+      sy = 0;
+    } else {
+      // Video is taller → crop top/bottom
+      sw = videoWidth;
+      sh = sw / targetRatio;
+      sx = 0;
+      sy = (videoHeight - sh) / 2;
+    }
+
+    canvas.width = sw;
+    canvas.height = sh;
+
+    ctx.drawImage(video, sx, sy, sw, sh, 0, 0, sw, sh);
+
+    setImage(canvas.toDataURL("image/jpeg", 0.95));
+
+    toggleCamera();
+
+  };
 
   // ----------------------------
   // Fake processing flow
@@ -165,44 +174,39 @@ export default function ScanPage() {
   // ----------------------------
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-100 to-slate-200 flex items-start justify-center p-4 pt-6">
-
       <div className="w-full max-w-md bg-white rounded-2xl shadow-xl overflow-hidden">
         <div className="px-6 py-4 border-b text-center space-y-2">
-  <img
-    src={logo}          // import logo at top
-    alt="Company Logo"
-    className="h-14 mx-auto object-contain"
-  />
-  <h1 className="text-lg font-semibold">Document Scan</h1>
-  <p className="text-xs text-gray-500">
-    Secure • Encrypted • Trusted
-  </p>
-</div>
-
+          <img
+            src={logo} // import logo at top
+            alt="Company Logo"
+            className="h-14 mx-auto object-contain"
+          />
+          <h1 className="text-lg font-semibold">Document Scan</h1>
+          <p className="text-xs text-gray-500">Secure • Encrypted • Trusted</p>
+        </div>
 
         <div className="p-5">
           {!image && (
             <>
               <button
-                onClick={startCamera}
-                disabled={cameraStarted}
-                className={`w-full mb-4 py-3 rounded-xl font-semibold ${
-                  cameraStarted
-                    ? "bg-gray-300 cursor-not-allowed"
-                    : "bg-blue-600 hover:bg-blue-700 text-white"
-                }`}
-              >
-                {cameraStarted ? "Camera Active" : "Start Camera"}
-              </button>
+  onClick={toggleCamera}
+  className={`w-full mb-4 py-3 rounded-xl font-semibold transition ${
+    cameraStarted
+      ? "bg-red-600 hover:bg-red-700 text-white"
+      : "bg-blue-600 hover:bg-blue-700 text-white"
+  }`}
+>
+  {cameraStarted ? "Stop Camera" : "Start Camera"}
+</button>
+
 
               <div className="relative rounded-xl overflow-hidden border bg-black aspect-[3/4]">
                 <video
-  ref={videoRef}
-  autoPlay
-  playsInline
-  className="w-full h-full object-cover"
-/>
-
+                  ref={videoRef}
+                  autoPlay
+                  playsInline
+                  className="w-full h-full object-cover"
+                />
 
                 {!cameraStarted && (
                   <div className="absolute inset-0 flex items-center justify-center px-4">
@@ -232,24 +236,22 @@ export default function ScanPage() {
           {image && (
             <>
               <div
-  onClick={() => setShowPreview(true)}
-  className="relative w-full aspect-[3/4] rounded-xl border shadow mb-4 overflow-hidden bg-black cursor-zoom-in"
->
-  <img
-    src={image}
-    alt="Preview"
-    className="w-full h-full object-cover"
-  />
+                onClick={() => setShowPreview(true)}
+                className="relative w-full aspect-[3/4] rounded-xl border shadow mb-4 overflow-hidden bg-black cursor-zoom-in"
+              >
+                <img
+                  src={image}
+                  alt="Preview"
+                  className="w-full h-full object-cover"
+                />
 
-  {/* Tap hint */}
-  <div className="absolute inset-0 flex items-center justify-center bg-black/20 opacity-0 hover:opacity-100 transition">
-    <span className="text-white text-sm font-semibold bg-black/60 px-3 py-1 rounded-lg">
-      Tap to preview
-    </span>
-  </div>
-</div>
-
-
+                {/* Tap hint */}
+                <div className="absolute inset-0 flex items-center justify-center bg-black/20 opacity-0 hover:opacity-100 transition">
+                  <span className="text-white text-sm font-semibold bg-black/60 px-3 py-1 rounded-lg">
+                    Tap to preview
+                  </span>
+                </div>
+              </div>
 
               <label className="flex gap-3 mb-5">
                 <input
@@ -259,13 +261,21 @@ export default function ScanPage() {
                   onChange={(e) => setConsentAccepted(e.target.checked)}
                 />
                 <span className="text-xs text-gray-700">
-                   I understand this document contains sensitive personal information. By sending it to the email address(es) and/or phone number I provide, I confirm the recipient information is correct and authorized. I understand that The Loss Prevention Group, Inc., dba LPG Live Scan, is not responsible for misdirected messages, unauthorized access to my email or phone, shared links, or any disclosure resulting from the recipients I choose.
+                  I understand this document contains sensitive personal
+                  information. By sending it to the email address(es) and/or
+                  phone number I provide, I confirm the recipient information is
+                  correct and authorized. I understand that The Loss Prevention
+                  Group, Inc., dba LPG Live Scan, is not responsible for
+                  misdirected messages, unauthorized access to my email or
+                  phone, shared links, or any disclosure resulting from the
+                  recipients I choose.
                 </span>
               </label>
 
               <div className="flex gap-3">
                 <button
                   onClick={() => {
+if (cameraStarted) toggleCamera();
                     setImage(null);
                     setConsentAccepted(false);
                   }}
@@ -293,28 +303,27 @@ export default function ScanPage() {
         </div>
       </div>
       {showPreview && (
-  <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4">
-    <div className="relative max-w-md w-full">
-      {/* Close button */}
-      <button
-        onClick={() => setShowPreview(false)}
-        className="absolute -top-3 -right-3 bg-white text-black w-9 h-9 rounded-full shadow flex items-center justify-center text-lg font-bold"
-      >
-        ✕
-      </button>
+        <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4">
+          <div className="relative max-w-md w-full">
+            {/* Close button */}
+            <button
+              onClick={() => setShowPreview(false)}
+              className="absolute -top-3 -right-3 bg-white text-black w-9 h-9 rounded-full shadow flex items-center justify-center text-lg font-bold"
+            >
+              ✕
+            </button>
 
-      {/* Image */}
-      <div className="rounded-xl overflow-hidden bg-black">
-        <img
-          src={image}
-          alt="Full Preview"
-          className="w-full h-auto max-h-[90vh] object-contain"
-        />
-      </div>
-    </div>
-  </div>
-)}
-
+            {/* Image */}
+            <div className="rounded-xl overflow-hidden bg-black">
+              <img
+                src={image}
+                alt="Full Preview"
+                className="w-full h-auto max-h-[90vh] object-contain"
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
