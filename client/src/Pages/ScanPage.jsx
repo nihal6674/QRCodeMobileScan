@@ -247,11 +247,17 @@ export default function ScanPage() {
                 />
 
                 {/* Tap hint */}
-                <div className="absolute inset-0 flex items-center justify-center bg-black/20 opacity-0 hover:opacity-100 transition">
-                  <span className="text-white text-sm font-semibold bg-black/60 px-3 py-1 rounded-lg">
-                    Tap to preview
-                  </span>
-                </div>
+                <div className="
+  absolute inset-0 flex items-center justify-center
+  bg-black/20
+  opacity-100 sm:opacity-0 sm:hover:opacity-100
+  transition
+">
+  <span className="text-white text-sm font-semibold bg-black/60 px-3 py-1 rounded-lg">
+    Tap to preview
+  </span>
+</div>
+
               </div>
 
               {/* CONSENT BOX */}
