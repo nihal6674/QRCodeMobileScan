@@ -254,24 +254,31 @@ export default function ScanPage() {
                 </div>
               </div>
 
-              <label className="flex gap-3 mb-5">
-                <input
-                  type="checkbox"
-                  className="mt-1 h-4 w-4 accent-blue-600"
-                  checked={consentAccepted}
-                  onChange={(e) => setConsentAccepted(e.target.checked)}
-                />
-                <span className="text-xs text-gray-700">
-                  I understand this document contains sensitive personal
-                  information. By sending it to the email address(es) and/or
-                  phone number I provide, I confirm the recipient information is
-                  correct and authorized. I understand that The Loss Prevention
-                  Group, Inc., dba LPG Live Scan, is not responsible for
-                  misdirected messages, unauthorized access to my email or
-                  phone, shared links, or any disclosure resulting from the
-                  recipients I choose.
-                </span>
-              </label>
+              {/* CONSENT BOX */}
+              
+              <div className="mb-5 rounded-lg border border-gray-200 bg-gray-50 p-4">
+  <div className="flex items-start gap-3">
+    
+    {/* Checkbox */}
+    <input
+      type="checkbox"
+      className="mt-1 h-4 w-4 accent-blue-600 flex-shrink-0"
+      checked={consentAccepted}
+      onChange={(e) => setConsentAccepted(e.target.checked)}
+    />
+
+    {/* Text */}
+    <p className="text-xs text-gray-700 leading-relaxed">
+      I understand this document contains sensitive personal information. By
+      sending it to the email address(es) and/or phone number I provide, I
+      confirm the recipient information is correct and authorized. I understand
+      that The Loss Prevention Group, Inc., dba LPG Live Scan, is not responsible
+      for misdirected messages, unauthorized access to my email or phone, shared
+      links, or any disclosure resulting from the recipients I choose.
+    </p>
+  </div>
+</div>
+
 
               <div className="flex gap-3">
                 <button

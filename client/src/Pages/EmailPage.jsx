@@ -353,9 +353,7 @@ export default function EmailPage({ image, onBack, consentAccepted }) {
 
               <p className="text-xs text-gray-500 mt-1">
                 This usually takes about{" "}
-                <span className="font-medium">2–3 seconds</span>. If our server
-                is waking up from sleep, it may take up to{" "}
-                <span className="font-medium">40 seconds</span>.
+                <span className="font-medium">2–3 seconds</span>
               </p>
             </div>
           </div>
