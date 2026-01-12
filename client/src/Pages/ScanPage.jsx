@@ -2,7 +2,7 @@ import { useRef, useState } from "react";
 import EmailPage from "./EmailPage";
 import StepItem from "../components/StepItem";
 import logo from "../assets/logo.png";
-
+import TrustIndicators from "../components/TrustIndicators";
 export default function ScanPage() {
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
@@ -182,7 +182,8 @@ export default function ScanPage() {
             className="h-14 mx-auto object-contain"
           />
           <h1 className="text-lg font-semibold">Document Scan</h1>
-          <p className="text-xs text-gray-500">Secure • Encrypted • Trusted</p>
+          <TrustIndicators />
+
         </div>
 
         <div className="p-5">
