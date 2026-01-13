@@ -1,8 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 const API_BASE = import.meta.env.VITE_API_BASE_URL;
 import PhoneInput from "react-phone-number-input";
 
-export default function EmailPage({ image, onBack, consentAccepted }) {
+export default function EmailPage({ image, onBack, session }) {
   const [primaryEmail, setPrimaryEmail] = useState("");
   const [extraEmails, setExtraEmails] = useState("");
   const [loading, setLoading] = useState(false);
@@ -13,11 +13,35 @@ export default function EmailPage({ image, onBack, consentAccepted }) {
   const [countryCode, setCountryCode] = useState("+1");
   const [sentEmails, setSentEmails] = useState([]);
   const [sentPhone, setSentPhone] = useState(null);
+const deliverySteps = [
+  "Preparing secure document…",
+  "Generating encrypted PDF…",
+  "Preparing email delivery…",
+  "Sending email…",
+  "Sending secure SMS link…",
+  "Finalizing delivery…",
+];
+
+const [stepIndex, setStepIndex] = useState(0);
 
   const [smsConsent, setSmsConsent] = useState(false);
   const isSmsConsentRequired = Boolean(phone);
   const canSubmit =
     primaryEmail && (!isSmsConsentRequired || smsConsent) && !loading;
+
+    useEffect(() => {
+  if (!loading) return;
+
+  setStepIndex(0);
+
+  const interval = setInterval(() => {
+    setStepIndex((prev) =>
+      prev < deliverySteps.length - 1 ? prev + 1 : prev
+    );
+  }, 1200); // adjust speed here
+
+  return () => clearInterval(interval);
+}, [loading]);
 
   const handleSubmit = async () => {
     if (!primaryEmail || !image) return;
@@ -47,6 +71,27 @@ export default function EmailPage({ image, onBack, consentAccepted }) {
 
       if (phone) {
         formData.append("phone", phone);
+      }
+
+      // 🔐 SEND SMS CONSENT (ONLY IF USER OPTED)
+      if (phone && smsConsent && session) {
+        try {
+          await fetch(`${API_BASE}/api/consent/sms`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              session_id: session.session_id,
+              session_token: session.session_token,
+            }),
+          });
+        } catch (err) {
+          console.error("SMS consent failed", err);
+          setError(true);
+          setLoading(false);
+          return;
+        }
       }
 
       const response = await fetch(`${API_BASE}/api/scan`, {
@@ -257,16 +302,15 @@ export default function EmailPage({ image, onBack, consentAccepted }) {
               Primary Email <span className="text-red-500">*</span>
             </label>
             <input
-  type="email"
-  readOnly
-  onFocus={(e) => e.target.removeAttribute("readOnly")}
-  onBlur={(e) => e.target.setAttribute("readOnly", true)}
-  placeholder="name@example.com"
-  value={primaryEmail}
-  onChange={(e) => setPrimaryEmail(e.target.value)}
-  className="w-full border rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-/>
-
+              type="email"
+              readOnly
+              onFocus={(e) => e.target.removeAttribute("readOnly")}
+              onBlur={(e) => e.target.setAttribute("readOnly", true)}
+              placeholder="name@example.com"
+              value={primaryEmail}
+              onChange={(e) => setPrimaryEmail(e.target.value)}
+              className="w-full border rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
           </div>
 
           <div>
@@ -347,13 +391,34 @@ export default function EmailPage({ image, onBack, consentAccepted }) {
             <div className="text-center max-w-xs">
               <div className="w-14 h-14 mx-auto rounded-full border-4 border-blue-200 border-t-blue-600 animate-spin mb-4" />
 
-              <p className="text-sm font-medium text-gray-700">
-                Sending document…
-              </p>
+              {loading && (
+  <div className="absolute inset-0 bg-white/80 backdrop-blur-sm flex items-center justify-center">
+    <div className="text-center max-w-xs w-full">
+      
+      {/* Spinner */}
+      <div className="w-14 h-14 mx-auto rounded-full border-4 border-blue-200 border-t-blue-600 animate-spin mb-6" />
+
+      {/* Animated Step Text */}
+      <div className="h-10 relative overflow-hidden">
+        <p
+          key={stepIndex}
+          className="text-sm font-medium text-gray-700 absolute inset-0 animate-step"
+        >
+          {deliverySteps[stepIndex]}
+        </p>
+      </div>
+
+      <p className="text-xs text-gray-500 mt-3">
+        Please keep this page open
+      </p>
+    </div>
+  </div>
+)}
+
 
               <p className="text-xs text-gray-500 mt-1">
                 This usually takes about{" "}
-                <span className="font-medium">2–3 seconds</span>
+                <span className="font-medium">10 seconds</span>
               </p>
             </div>
           </div>

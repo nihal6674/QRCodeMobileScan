@@ -1,8 +1,9 @@
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import EmailPage from "./EmailPage";
 import StepItem from "../components/StepItem";
 import logo from "../assets/logo.png";
 import TrustIndicators from "../components/TrustIndicators";
+
 export default function ScanPage() {
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
@@ -13,17 +14,40 @@ export default function ScanPage() {
   const [step, setStep] = useState("scan");
   const [consentAccepted, setConsentAccepted] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
+  const [session, setSession] = useState(null);
 
   // Processing UI
   const [processing, setProcessing] = useState(false);
   const [progress, setProgress] = useState(0);
   const [processText, setProcessText] = useState("Cropping document…");
 
+
+  useEffect(() => {
+  const initSession = async () => {
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/init`, {
+        method: "POST",
+      });
+      const data = await res.json();
+      setSession(data); // { session_id, session_token }
+    } catch (err) {
+      console.error("Session init failed", err);
+    }
+  };
+
+  initSession();
+}, []);
   // ----------------------------
   // Email page
   // ----------------------------
   if (step === "email") {
-    return <EmailPage image={image} onBack={() => setStep("scan")} />;
+return (
+  <EmailPage
+    image={image}
+    session={session}
+    onBack={() => setStep("scan")}
+  />
+);
   }
 
   // ----------------------------
@@ -96,30 +120,48 @@ export default function ScanPage() {
   // ----------------------------
   // Fake processing flow
   // ----------------------------
-  const confirmScan = () => {
-    if (!image || !consentAccepted) return;
+  const confirmScan = async () => {
+  if (!image || !consentAccepted || !session) return;
 
-    setProcessing(true);
-    setProgress(0);
-    setProcessText("Cropping document…");
+  try {
+    await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/consent/document`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        session_id: session.session_id,
+        session_token: session.session_token,
+      }),
+    });
+  } catch (err) {
+    console.error("Document consent failed", err);
+    return;
+  }
 
-    let p = 0;
-    const interval = setInterval(() => {
-      p += 4;
-      setProgress(p);
+  // ✅ keep your existing processing UI
+  setProcessing(true);
+  setProgress(0);
+  setProcessText("Cropping document…");
 
-      if (p === 30) setProcessText("Deskewing image…");
-      if (p === 65) setProcessText("Enhancing clarity…");
+  let p = 0;
+  const interval = setInterval(() => {
+    p += 4;
+    setProgress(p);
 
-      if (p >= 100) {
-        clearInterval(interval);
-        setTimeout(() => {
-          setProcessing(false);
-          setStep("email");
-        }, 300);
-      }
-    }, 120);
-  };
+    if (p === 30) setProcessText("Deskewing image…");
+    if (p === 65) setProcessText("Enhancing clarity…");
+
+    if (p >= 100) {
+      clearInterval(interval);
+      setTimeout(() => {
+        setProcessing(false);
+        setStep("email");
+      }, 300);
+    }
+  }, 120);
+};
+
 
   // ----------------------------
   // Processing Screen
@@ -170,6 +212,8 @@ export default function ScanPage() {
       </div>
     );
   }
+
+  
 
   // ----------------------------
   // Main UI

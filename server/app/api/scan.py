@@ -20,7 +20,7 @@ from app.services.pdf_service import image_to_pdf
 from app.services.email_service import send_email_with_attachment
 from app.utils.token_store import create_download_token
 from app.services.sms_service import send_sms
-from app.services.image_processing import process_image
+# from app.services.image_processing import process_image
 
 
 router = APIRouter()
@@ -81,8 +81,8 @@ async def scan_form(
         # -----------------------------
         # IMAGE PROCESSING (CROP + DESKEW + ENHANCE)
         # -----------------------------
-        processed_image = process_image(input_path)
-        shutil.move(processed_image, processed_path)
+        shutil.copy(input_path, processed_path)
+
 
         # -----------------------------
         # Generate PDF

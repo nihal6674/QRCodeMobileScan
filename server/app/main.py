@@ -14,6 +14,8 @@ from slowapi.errors import RateLimitExceeded
 from app.utils.token_store import cleanup_expired_tokens
 from app.api.scan import router as scan_router
 from app.api.download import router as download_router
+from app.api.init import router as init_router
+from app.api.consent import router as consent_router
 
 
 
@@ -77,6 +79,8 @@ else:
 # -----------------------------
 # ROUTES
 # -----------------------------
+app.include_router(init_router, prefix="/api")
+app.include_router(consent_router, prefix="/api")
 app.include_router(scan_router, prefix="/api")
 app.include_router(download_router)
 
