@@ -303,9 +303,6 @@ const [stepIndex, setStepIndex] = useState(0);
             </label>
             <input
               type="email"
-              readOnly
-              onFocus={(e) => e.target.removeAttribute("readOnly")}
-              onBlur={(e) => e.target.setAttribute("readOnly", true)}
               placeholder="name@example.com"
               value={primaryEmail}
               onChange={(e) => setPrimaryEmail(e.target.value)}

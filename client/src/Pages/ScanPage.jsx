@@ -345,16 +345,24 @@ if (cameraStarted) toggleCamera();
                 </button>
 
                 <button
-                  disabled={!consentAccepted}
-                  onClick={confirmScan}
-                  className={`flex-1 py-2.5 rounded-xl font-semibold text-white ${
-                    consentAccepted
-                      ? "bg-blue-600 hover:bg-blue-700"
-                      : "bg-blue-300 cursor-not-allowed"
-                  }`}
-                >
-                  Continue
-                </button>
+  disabled={!consentAccepted || processing}
+  onClick={confirmScan}
+  className={`flex-1 py-2.5 rounded-xl font-semibold text-white flex items-center justify-center gap-2 transition ${
+    consentAccepted && !processing
+      ? "bg-blue-600 hover:bg-blue-700"
+      : "bg-blue-300 cursor-not-allowed"
+  }`}
+>
+  {processing ? (
+    <>
+      <span className="w-4 h-4 border-2 border-white/60 border-t-white rounded-full animate-spin" />
+      <span>Processing…</span>
+    </>
+  ) : (
+    "Continue"
+  )}
+</button>
+
               </div>
             </>
           )}
